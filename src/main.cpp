@@ -4,6 +4,22 @@
 #include "ESPAsyncWebServer.h"
 #include <Adafruit_Sensor.h>
 
+//Librerias para dht11
+#include <DHT.h>
+#include <DHT_U.h>
+
+//Variables para DHT11
+#define DHT_PIN 2
+#define DHT_TYPE DHT11
+
+DHT_Unified dht(DHT_PIN, DHT_TYPE);
+
+float humedad = 0;
+float temperatura = 0;
+
+float *obtenerHumedadTemperatura();
+//Fin de variables para DHT11
+
 const int trigPin = 5;
 const int echoPin = 18;
 #define SOUND_SPEED 0.034
@@ -81,13 +97,14 @@ String processor(const String& var){
 }
 
 void setup(){
+  //Inicialización de DHT11
+  dht.begin();
+
   // Serial port for debugging purposes
   Serial.begin(115200);
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
   pinMode(echoPin, INPUT); 
 
- 
-  
   // Connect to Wi-Fi
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
@@ -117,5 +134,32 @@ void setup(){
 }
  
 void loop(){
-  
+  delay(2000);
+  sensors_event_t event;
+  float *data_dht11 = obtenerHumedadTemperatura();
+  humedad = data_dht11[0];
+  temperatura = data_dht11[1];
+}
+
+// Funciones
+
+// Función para obtener la humedad y temperatura del sensor DHT
+float *obtenerHumedadTemperatura()
+{
+  static float datos[2]; // Arreglo estático para almacenar los datos
+
+  // Estructura para almacenar los eventos del sensor
+  sensors_event_t event;
+
+  // Tomar el evento de humedad
+  dht.humidity().getEvent(&event);
+  // Acceder al valor de humedad
+  datos[0] = event.relative_humidity;
+
+  // Tomar el evento de temperatura
+  dht.temperature().getEvent(&event);
+  // Tomar el dato de temperatura
+  datos[1] = event.temperature;
+
+  return datos; // Devolver los datos en un arreglo
 }
