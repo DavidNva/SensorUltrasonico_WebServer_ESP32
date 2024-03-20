@@ -7,10 +7,18 @@
 //Librerias para dht11
 #include <DHT.h>
 #include <DHT_U.h>
+#include <ESP32Servo.h>
 
 //Variables para DHT11
 #define DHT_PIN 2
 #define DHT_TYPE DHT11
+
+Servo servodoor;
+Servo servogarage;
+
+
+const int pinServo = 4; // Pin GPIO al que está conectado el servo
+const int pinServo2 = 13;
 
 DHT_Unified dht(DHT_PIN, DHT_TYPE);
 
@@ -34,7 +42,21 @@ float distanceCm;
 const char* ssid = "Deiv";
 const char* password = "987654321"; 
 AsyncWebServer server(80);
-String readDistance(){
+// String readDistance(){
+//   digitalWrite(trigPin, HIGH);
+//   delayMicroseconds(10);
+//   digitalWrite(trigPin, LOW);
+ 
+//   duration = pulseIn(echoPin, HIGH);
+  
+//   distanceCm = duration * SOUND_SPEED/2;
+//   Serial.println("Distance:");
+// Serial.println(distanceCm);
+//    return String(distanceCm);
+   
+
+// }
+String readDistance() {
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
@@ -43,11 +65,21 @@ String readDistance(){
   
   distanceCm = duration * SOUND_SPEED/2;
   Serial.println("Distance:");
-Serial.println(distanceCm);
-   return String(distanceCm);
-   
+  Serial.println(distanceCm);
 
+  if (distanceCm < 20) {
+         // Esperar 1 segundo
+    servodoor.write(100);  // Mover el servo a 90 grados
+    delay(1000);
+  } else {
+    servodoor.write(0);   // Mover el servo a 0 grados
+    delay(1000);
+    
+  }
+
+  return String(distanceCm);
 }
+
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html>
 <head>
@@ -111,6 +143,8 @@ void setup(){
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
   pinMode(echoPin, INPUT); 
 
+  servodoor.attach(pinServo);
+  servogarage.attach(pinServo2);
   // Connect to Wi-Fi
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
