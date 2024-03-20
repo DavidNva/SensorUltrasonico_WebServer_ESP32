@@ -20,6 +20,12 @@ float temperatura = 0;
 float *obtenerHumedadTemperatura();
 //Fin de variables para DHT11
 
+//Variables para LDR
+#define LDR_PIN 13
+
+#define LED_PIN 21
+//Fin de variables para LDR
+
 const int trigPin = 5;
 const int echoPin = 18;
 #define SOUND_SPEED 0.034
@@ -139,6 +145,15 @@ void loop(){
   float *data_dht11 = obtenerHumedadTemperatura();
   humedad = data_dht11[0];
   temperatura = data_dht11[1];
+
+  //Control de focos por obtención de valores LDR
+  int lecturaLDR = analogRead(LDR_PIN);
+  Serial.println(lecturaLDR);
+  if(lecturaLDR > 1000){
+    digitalWrite(LED_PIN, HIGH);
+  }else{
+    digitalWrite(LED_PIN, LOW);
+  }
 }
 
 // Funciones
